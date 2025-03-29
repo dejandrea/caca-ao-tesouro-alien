@@ -6,8 +6,8 @@ import random
 # Inicialização de variáveis
 WIDTH = 700*4 #TODO: AJUSTAR
 HEIGHT = 700
-GAME_STATE = "PLAY"
-# GAME_STATE = "START"
+GAME_STATE = "PLAY" #TODO:APAGAR
+# GAME_STATE = "START" 
 sounds_on = True
 score = 0
 lives = 3
@@ -26,14 +26,32 @@ alien.frame = 0
 alien.width = 100
 alien.height = 100
 
-#blocos invisíveis
+#blocos invisíveis - #TODO: AGRUPAR BLOCOS SE POSSÍVEL
 invisible_block1 = Rect(35, 105, 200, 70)
 invisible_block2 = Rect(0, 360, 310, 70)
 invisible_block3 = Rect(310, 430, 195, 70)
 invisible_block4 = Rect(480, 125, 205, 70)
 invisible_block5 = Rect(500, 485, 50, 70)
 invisible_block6 = Rect(645, 480, 205, 70)
-invisible_block7 = Rect(810, 345, 340, 70)
+invisible_block7 = Rect(810, 345, 340, 70) #bloco com 5
+invisible_block8 = Rect(900, 140, 165, 50) #cogumelo
+invisible_block9 = Rect(1110, 100, 200, 20) #nuvem
+invisible_block10 = Rect(1210, 230, 200, 70) #bloco triplo
+invisible_block11 = Rect(1405, 380, 340, 70) #bloco com 5
+invisible_block12 = Rect(1525, 265, 200, 70) #bloco triplo
+invisible_block13 = Rect(1540, 70, 165, 50) #cogumelo
+invisible_block14 = Rect(1735, 60, 200, 20) #nuvem
+invisible_block15 = Rect(1940, 125, 70, 30) #bloco simples
+invisible_block16 = Rect(2060, 220, 70, 30) #bloco simples
+invisible_block17 = Rect(1975, 275, 70, 30) #bloco simples
+invisible_block18 = Rect(1810, 345, 200, 70) #bloco triplo
+invisible_block19 = Rect(2255, 280, 190, 20)
+invisible_block20 = Rect(2542, 100, 200, 20) #nuvem
+invisible_block21 = Rect(2328, 50, 190, 20)
+invisible_block22 = Rect(2365, 420, 200, 70) #bloco triplo
+invisible_block23 = Rect(2245, 487, 555, 70)
+invisible_block24 = Rect(2478, 365, 320, 70)
+
 
 #TODO: APAGAR POSIÇÃO DO MOUSE, VARIÁVEIS, FUNÇÃO E DESENHO
 mouse_x, mouse_y = 0, 0
@@ -82,11 +100,29 @@ def draw():
         screen.draw.rect(invisible_block5, "red")
         screen.draw.rect(invisible_block6, "red")
         screen.draw.rect(invisible_block7, "red")
+        screen.draw.rect(invisible_block8, "red")
+        screen.draw.rect(invisible_block9, "red")
+        screen.draw.rect(invisible_block10, "red")
+        screen.draw.rect(invisible_block11, "red")
+        screen.draw.rect(invisible_block12, "red")
+        screen.draw.rect(invisible_block13, "red")
+        screen.draw.rect(invisible_block14, "red")
+        screen.draw.rect(invisible_block15, "red")
+        screen.draw.rect(invisible_block16, "red")
+        screen.draw.rect(invisible_block17, "red")
+        screen.draw.rect(invisible_block18, "red")
+        screen.draw.rect(invisible_block19, "red")
+        screen.draw.rect(invisible_block20, "red")
+        screen.draw.rect(invisible_block21, "red")
+        screen.draw.rect(invisible_block22, "red")
+        screen.draw.rect(invisible_block23, "red")
+        screen.draw.rect(invisible_block24, "red")
+
 
         #TODO: APAGAR TESTES DE POSIÇÃO
         # screen.draw.text(f"BGX: {bg_x}, Y: {background.height}", (10, 10), color="black")
         # screen.draw.text(f"AlienX: {ax}", (10, 30), color="black")
-        screen.draw.text(f"Mouse: {mouse_x}, {mouse_y}", (10, 10), fontsize=24, color="red")
+        screen.draw.text(f"Mouse: {mouse_x}, {mouse_y}", (mouse_x, mouse_y), fontsize=24, color="red")
         
 
     elif GAME_STATE == "WIN":
