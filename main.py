@@ -6,8 +6,8 @@ import random
 # Inicialização de variáveis
 WIDTH = 700
 HEIGHT = 700
-# GAME_STATE = "PLAY"
-GAME_STATE = "START"
+GAME_STATE = "PLAY"
+# GAME_STATE = "START"
 sounds_on = True
 score = 0
 lives = 3
@@ -18,6 +18,15 @@ background.x = WIDTH // 2
 background.y = HEIGHT // 2
 bg_x = 0;
 
+#Jogador
+alien = Actor('alien1')
+alien.pos = 100, 56
+alien.images = ["alien1","alien2"]
+alien.frame = 0
+alien.width = 100
+alien.height = 100
+
+#TODO: APAGAR POSIÇÃO DO MOUSE, VARIÁVEIS, FUNÇÃO E DESENHO
 mouse_x, mouse_y = 0, 0
 
 def on_mouse_move(pos):
@@ -52,7 +61,13 @@ def draw():
         screen.fill((255,255,255))  # Cor de fundo branca
         screen.blit("background", (bg_x, 0))
         screen.blit("background", (bg_x + WIDTH, 0))
+
+        alien.draw()
+        move_player()
+
+        #TODO: APAGAR TESTES DE POSIÇÃO
         # screen.draw.text(f"BGX: {bg_x}, Y: {background.height}", (10, 10), color="black")
+        # screen.draw.text(f"AlienX: {ax}", (10, 30), color="black")
         screen.draw.text(f"Mouse: {mouse_x}, {mouse_y}", (10, 10), fontsize=24, color="red")
         
 
@@ -73,6 +88,47 @@ def update():
         bg_x = -WIDTH*4
     if bg_x >= 0:
         bg_x = 0
+
+    # movimento do alien
+    alien.frame += 0.05  # Ajuste o valor para controlar a velocidade da animação
+    if alien.frame >= len(alien.images):
+        alien.frame = 0  # Reinicia a animação
+
+    alien.image = alien.images[int(alien.frame)]  # Atualiza a imagem do ator
+    if alien.x <= 50:
+        alien.x = 50
+
+    if alien.x >= (WIDTH)-20:
+        alien.x = (WIDTH)-20
+        end_game()
+
+# Função de Fim de Jogo
+def end_game():
+    global GAME_STATE
+    
+    if alien.x >= WIDTH-20 and score >= 3: #ganhou o jogo
+        GAME_STATE = "WIN"
+    elif alien.x >= WIDTH-20 and score < 3: #chegou ao fim, mas não completou a missão
+        GAME_STATE = "END"
+    elif lives <= 0: #perdeu o jogo
+        GAME_STATE = "END"
+
+# Função para movimento do Jogador
+def move_player():
+    global bg_x
+    if keyboard.left :
+        # alien.x -= 2  # Move para a esquerda
+        bg_x += 2
+    if keyboard.right and bg_x > -WIDTH*4:
+        # alien.x += 2  # Move para a direita
+        bg_x -= 2
+    if keyboard.right and bg_x == -WIDTH*4:
+        alien.x += 2  # Move para a direita
+        # bg_x -= 2
+    if keyboard.up:
+        alien.y -= 5  # Move para cima
+    if keyboard.down:
+        alien.y += 5  # Move para baixo
 
 # Função para verificar cliques do mouse
 def on_mouse_down(pos, button):
