@@ -6,7 +6,13 @@ import random
 # Inicialização de variáveis
 WIDTH = 700
 HEIGHT = 700
-GAME_STATE = "START"
+GAME_STATE = "PLAY"
+
+#background
+background = Actor("background")
+background.x = WIDTH // 2
+background.y = HEIGHT // 2
+bg_x = 0;
 
 mouse_x, mouse_y = 0, 0
 
@@ -25,6 +31,11 @@ def draw():
     elif GAME_STATE == "PLAY":
         screen.clear()
         screen.fill((255,255,255))  # Cor de fundo branca
+        screen.fill((255,255,255))  # Cor de fundo branca
+        screen.blit("background", (bg_x, 0))
+        screen.blit("background", (bg_x + WIDTH, 0))
+        # screen.draw.text(f"BGX: {bg_x}, Y: {background.height}", (10, 10), color="black")
+        screen.draw.text(f"Mouse: {mouse_x}, {mouse_y}", (10, 10), fontsize=24, color="red")
         
 
     elif GAME_STATE == "WIN":
@@ -38,7 +49,13 @@ def draw():
 
 
 def update():
-    pass
+    global bg_x
+    # Quando a imagem sair completamente da tela, reposiciona
+    if bg_x <= -WIDTH*4:
+        bg_x = -WIDTH*4
+    if bg_x >= 0:
+        bg_x = 0
+
 
     
 
