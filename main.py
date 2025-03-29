@@ -4,7 +4,7 @@ import math
 import random
 
 # Inicialização de variáveis
-WIDTH = 700
+WIDTH = 700*4 #TODO: AJUSTAR
 HEIGHT = 700
 GAME_STATE = "PLAY"
 # GAME_STATE = "START"
@@ -25,6 +25,15 @@ alien.images = ["alien1","alien2"]
 alien.frame = 0
 alien.width = 100
 alien.height = 100
+
+#blocos invisíveis
+invisible_block1 = Rect(35, 105, 200, 70)
+invisible_block2 = Rect(0, 360, 310, 70)
+invisible_block3 = Rect(310, 430, 195, 70)
+invisible_block4 = Rect(480, 125, 205, 70)
+invisible_block5 = Rect(500, 485, 50, 70)
+invisible_block6 = Rect(645, 480, 205, 70)
+invisible_block7 = Rect(810, 345, 340, 70)
 
 #TODO: APAGAR POSIÇÃO DO MOUSE, VARIÁVEIS, FUNÇÃO E DESENHO
 mouse_x, mouse_y = 0, 0
@@ -64,6 +73,15 @@ def draw():
 
         alien.draw()
         move_player()
+
+        #TODO: APAGAR BLOCOS INVISÍVEIS
+        screen.draw.rect(invisible_block1, "red")
+        screen.draw.rect(invisible_block2, "red")
+        screen.draw.rect(invisible_block3, "red")
+        screen.draw.rect(invisible_block4, "red")
+        screen.draw.rect(invisible_block5, "red")
+        screen.draw.rect(invisible_block6, "red")
+        screen.draw.rect(invisible_block7, "red")
 
         #TODO: APAGAR TESTES DE POSIÇÃO
         # screen.draw.text(f"BGX: {bg_x}, Y: {background.height}", (10, 10), color="black")
@@ -119,9 +137,11 @@ def move_player():
     if keyboard.left :
         # alien.x -= 2  # Move para a esquerda
         bg_x += 2
+        invisible_block1.x += 2 #TODO: APAGAR
     if keyboard.right and bg_x > -WIDTH*4:
         # alien.x += 2  # Move para a direita
         bg_x -= 2
+        invisible_block1.x -= 2 #TODO: APAGAR
     if keyboard.right and bg_x == -WIDTH*4:
         alien.x += 2  # Move para a direita
         # bg_x -= 2
