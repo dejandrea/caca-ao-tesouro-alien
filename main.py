@@ -6,8 +6,8 @@ import random
 # Inicialização de variáveis
 WIDTH = 700
 HEIGHT = 700
-GAME_STATE = "PLAY"
-GAME_STATE = "PLAY"
+# GAME_STATE = "PLAY"
+GAME_STATE = "START"
 sounds_on = True
 score = 0
 lives = 3
