@@ -11,7 +11,7 @@ GAME_STATE = "PLAY" #TODO:APAGAR
 sounds_on = True
 score = 0
 lives = 3
-stage = 3 #TODO: Mudar para 0
+stage = 1 #TODO: Mudar para 0
 
 #background
 background = Actor("bg1")
@@ -22,14 +22,14 @@ background.frame = 0
 bg_x = 0;
 
 #Jogador
-alien = Actor('alien1')
-alien.pos = 40, 56
-alien.images = ["alien1","alien2"]
-alien.frame = 0
-alien.width = 100
-alien.height = 100
-alien_velocity_y = 0
-alien_collided = False
+
+
+#Inimigos
+enemies = []
+enemies_images = [["enimie01-1","enimie01-2","enimie01-3"],
+                  ["enimie02-1","enimie02-2","enimie02-3"],
+                  ["enimie03-1","enimie03-2","enimie03-3"]
+                  ]
 
 #blocos invisíveis
 invisible_blocks_stg1 = [
@@ -79,11 +79,86 @@ def on_mouse_move(pos):
     global mouse_x, mouse_y
     mouse_x, mouse_y = pos  # Atualiza as coordenadas do mouse
 
-# Função para desenhar a tela
+class Enemy:
+    def __init__(self,enemy_type):
+        self.index_frame = 0
+        self.enemy_type = enemy_type
+        self.images = enemies_images[self.enemy_type]
+        # self.velocities = []
+        self.direction = random.choice([-1.5, 1.5,-1,1,0.5,-0.5])
+        x = random.randint(100, 800)  # Posição X aleatória
+        y = random.randint(50, 400)  # Posição Y aleatória
+        self.actor = Actor(self.images[self.index_frame], (x, y))
+    
+    def animate(self):
+        self.index_frame += 0.05
+        if self.index_frame >= len(self.images):
+            self.index_frame = 0  # Reinicia a animação
+        self.actor.image = self.images[int(self.index_frame)]
+
+    def move(self):
+        self.actor.x += self.direction
+        if self.actor.x > WIDTH -50 or self.actor.x < 50:
+            self.direction = self.direction*(-1)
+
+        self.actor.y += 0.3
+        if self.actor.y > 600:
+            self.actor.y = 50
+
+    def collide(self,collisor):
+        enemy_collided = any(self.actor.colliderect(block) for block in collisor)
+
+        if enemy_collided:
+            self.direction = self.direction*(-1)
+
+    def draw(self):
+        self.actor.draw()
+
+class Alien:
+    def __init__(self):
+        self.actor = Actor('alien1',(40, 56))
+        self.images = ["alien1","alien2"]
+        self.frame = 0
+        self.velocity_y = 0
+        self.collided = False
+    
+    def animate(self):
+        self.frame += 0.05
+        if self.frame >= len(self.images):
+            self.frame = 0  # Reinicia a animação
+        self.actor.image = self.images[int(self.frame)]
+
+    def move(self):
+        if self.actor.x <= 40:
+            self.actor.x = 40
+        if keyboard.left :
+            self.actor.x -= 2  # Move para a esquerda
+        if keyboard.right:
+            self.actor.x += 2  # Move para a direita
+        if keyboard.up:
+            self.actor.y -= 10  # Move para cima
+            self.actor_collided = False
+
+
+    def velocity(self):
+        #velocidade Y do alien
+        self.actor.y += self.velocity_y
+        if not self.collided:
+            self.velocity_y += 0.3
+
+    def collide(self,collisor):
+        self.collided = any(self.actor.colliderect(block) for block in collisor)
+
+        if self.collided:
+            self.velocity_y = 0
+
+    def draw(self):
+        self.actor.draw()
+
+alien = Alien()
+
 def draw():
     screen.clear()
-    global alien_velocity_y
-    global alien_collided
     if GAME_STATE == "START":
         screen.fill((0, 0, 0))
         # Título
@@ -110,19 +185,29 @@ def draw():
             screen.blit("bg1", (bg_x + WIDTH, 0))
 
             alien.draw()
-            move_player()
-            for block in invisible_blocks_stg1:
-                screen.draw.rect(block, "red")
+            alien.move()
 
-            alien_collided = any(alien.colliderect(block) for block in invisible_blocks_stg1)
+            if len(enemies) <= 3:
+                generate_enemies()
 
-            if alien_collided:
-                alien_velocity_y = 0
+            for enemy in enemies:
+                enemy.draw()
+                    
+            # for block in invisible_blocks_stg1:
+            #     screen.draw.rect(block, "red")
+            for enemy in enemies:
+                enemy.collide(invisible_blocks_stg1)
+
+            alien.collide(invisible_blocks_stg1)
+
+            for enemy in enemies:
+                if collision(alien.actor, enemy.actor):
+                    lives_over()
             
-            if alien.y >=600:
+            if alien.actor.y >=600:
                 lives_over()
             
-            if alien.x >=880:
+            if alien.actor.x >=880:
                 next_stage()
         if stage == 2:
             screen.clear()
@@ -131,19 +216,29 @@ def draw():
             screen.blit("bg2", (bg_x + WIDTH, 0))
 
             alien.draw()
-            move_player()
-            for block in invisible_blocks_stg2:
-                screen.draw.rect(block, "red")
+            alien.move()
 
-            alien_collided = any(alien.colliderect(block) for block in invisible_blocks_stg2)
+            if len(enemies) <= 3:
+                generate_enemies()
 
-            if alien_collided:
-                alien_velocity_y = 0
+            for enemy in enemies:
+                enemy.draw()
+                    
+            # for block in invisible_blocks_stg1:
+            #     screen.draw.rect(block, "red")
+            for enemy in enemies:
+                enemy.collide(invisible_blocks_stg1)
 
-            # if alien.y >=600:
-            #     lives_over()
+            alien.collide(invisible_blocks_stg1)
+
+            for enemy in enemies:
+                if collision(alien.actor, enemy.actor):
+                    lives_over()
             
-            if alien.x >=880:
+            if alien.actor.y >=600:
+                lives_over()
+            
+            if alien.actor.x >=880:
                 next_stage()
         if stage == 3:
             screen.clear()
@@ -152,19 +247,29 @@ def draw():
             screen.blit("bg3", (bg_x + WIDTH, 0))
 
             alien.draw()
-            move_player()
-            for block in invisible_blocks_stg3:
-                screen.draw.rect(block, "red")
+            alien.move()
 
-            alien_collided = any(alien.colliderect(block) for block in invisible_blocks_stg3)
+            if len(enemies) <= 3:
+                generate_enemies()
 
-            if alien_collided:
-                alien_velocity_y = 0
+            for enemy in enemies:
+                enemy.draw()
+                    
+            # for block in invisible_blocks_stg1:
+            #     screen.draw.rect(block, "red")
+            for enemy in enemies:
+                enemy.collide(invisible_blocks_stg1)
+
+            alien.collide(invisible_blocks_stg1)
+
+            for enemy in enemies:
+                if collision(alien.actor, enemy.actor):
+                    lives_over()
             
-            # if alien.y >=600:
-            #     lives_over()
+            if alien.actor.y >=600:
+                lives_over()
             
-            if alien.x >=880:
+            if alien.actor.x >=880:
                 next_stage()
 
         #TODO: APAGAR TESTES DE POSIÇÃO
@@ -188,41 +293,32 @@ def draw():
 
 def update():
     global bg_x
-
-    global alien_velocity_y
-    global alien_collided
-        #velocidade Y do alien
-    alien.y += alien_velocity_y
-    if not alien_collided:
-        alien_velocity_y += 0.5
-    print(alien_collided)
-    print(alien_velocity_y)
+    
     # Quando a imagem sair completamente da tela, reposiciona
     if bg_x <= -WIDTH*4:
         bg_x = -WIDTH*4
     if bg_x >= 0:
         bg_x = 0
 
-    # movimento do alien
-    alien.frame += 0.05  # Ajuste o valor para controlar a velocidade da animação
-    if alien.frame >= len(alien.images):
-        alien.frame = 0  # Reinicia a animação
+    alien.velocity()
+    alien.animate()
 
-    alien.image = alien.images[int(alien.frame)]  # Atualiza a imagem do ator
-    if alien.x <= 50:
-        alien.x = 50
-
-    if alien.x >= (WIDTH)-20:
-        alien.x = (WIDTH)-20
+    if alien.actor.x >= (WIDTH)-20:
+        alien.actor.x = (WIDTH)-20
         end_game()
+
+    for enemy in enemies:
+        enemy.animate()
+        enemy.move()
+        # enemy.change_direction()
 
 # Função de Fim de Jogo
 def end_game():
     global GAME_STATE
     
-    if alien.x >= WIDTH-20 and score >= 3: #ganhou o jogo
+    if alien.actor.x >= WIDTH-20 and score >= 3: #ganhou o jogo
         GAME_STATE = "WIN"
-    elif alien.x >= WIDTH-20 and score < 3: #chegou ao fim, mas não completou a missão
+    elif alien.actor.x >= WIDTH-20 and score < 3: #chegou ao fim, mas não completou a missão
         GAME_STATE = "END"
     elif lives <= 0: #perdeu o jogo
         GAME_STATE = "END"
@@ -233,7 +329,8 @@ def lives_over():
     global GAME_STATE
     lives -=1
     if lives > 0:
-        alien.y = 0
+        alien.actor.y = 0
+        alien.actor.x = 30
     else:
         GAME_STATE = "END"
 
@@ -244,30 +341,15 @@ def next_stage():
         stage +=1
         background.frame += 1
 
-# Função para movimento do Jogador
-def move_player():
-    global bg_x
-    global alien_collided
-        #velocidade Y do alien
-    if keyboard.left :
-        alien.x -= 2  # Move para a esquerda
-        # bg_x += 2
-        # for block in invisible_blocks_stg1:
-        #     block.x += 2
-    if keyboard.right:
-        alien.x += 2  # Move para a direita
-        # bg_x -= 2
-        # for block in invisible_blocks_stg1:
-        #     block.x -= 2
-    # if keyboard.right and bg_x == -WIDTH*4:
-    #     alien.x += 2  # Move para a direita
-    #     # bg_x -= 2
-    if keyboard.up:
-        alien.y -= 10  # Move para cima
-        alien_collided = False
-    # if keyboard.down:
-    #     alien.y += 5  # Move para baixo
+# Função para gerar os inimigos
+def generate_enemies():
+    global enemies
+    for i in range(0,3):  # Criando 5 inimigos
+        enemies.append(Enemy(i))
     
+def collision(actor1, actor2):
+    return (abs(actor1.x - actor2.x) < 30 and abs(actor1.y - actor2.y) < 30) 
+
 # Função para verificar cliques do mouse
 def on_mouse_down(pos, button):
     global sounds_on
