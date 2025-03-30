@@ -4,13 +4,14 @@ import math
 import random
 
 # Inicialização de variáveis
-WIDTH = 700*4 #TODO: AJUSTAR
+WIDTH = 700
 HEIGHT = 700
 GAME_STATE = "PLAY" #TODO:APAGAR
 # GAME_STATE = "START" 
 sounds_on = True
 score = 0
 lives = 3
+stage = 0
 
 #background
 background = Actor("background")
@@ -25,32 +26,36 @@ alien.images = ["alien1","alien2"]
 alien.frame = 0
 alien.width = 100
 alien.height = 100
+alien_velocity_y = 0
+alien_collided = False
 
-#blocos invisíveis - #TODO: AGRUPAR BLOCOS SE POSSÍVEL
-invisible_block1 = Rect(35, 105, 200, 70)
-invisible_block2 = Rect(0, 360, 310, 70)
-invisible_block3 = Rect(310, 430, 195, 70)
-invisible_block4 = Rect(480, 125, 205, 70)
-invisible_block5 = Rect(500, 485, 50, 70)
-invisible_block6 = Rect(645, 480, 205, 70)
-invisible_block7 = Rect(810, 345, 340, 70) #bloco com 5
-invisible_block8 = Rect(900, 140, 165, 50) #cogumelo
-invisible_block9 = Rect(1110, 100, 200, 20) #nuvem
-invisible_block10 = Rect(1210, 230, 200, 70) #bloco triplo
-invisible_block11 = Rect(1405, 380, 340, 70) #bloco com 5
-invisible_block12 = Rect(1525, 265, 200, 70) #bloco triplo
-invisible_block13 = Rect(1540, 70, 165, 50) #cogumelo
-invisible_block14 = Rect(1735, 60, 200, 20) #nuvem
-invisible_block15 = Rect(1940, 125, 70, 30) #bloco simples
-invisible_block16 = Rect(2060, 220, 70, 30) #bloco simples
-invisible_block17 = Rect(1975, 275, 70, 30) #bloco simples
-invisible_block18 = Rect(1810, 345, 200, 70) #bloco triplo
-invisible_block19 = Rect(2255, 280, 190, 20)
-invisible_block20 = Rect(2542, 100, 200, 20) #nuvem
-invisible_block21 = Rect(2328, 50, 190, 20)
-invisible_block22 = Rect(2365, 420, 200, 70) #bloco triplo
-invisible_block23 = Rect(2245, 487, 555, 70)
-invisible_block24 = Rect(2478, 365, 320, 70)
+#blocos invisíveis
+invisible_blocks = [
+    Rect(35, 105, 200, 70),
+    Rect(0, 360, 310, 70),
+    Rect(310, 430, 195, 70),
+    Rect(480, 125, 205, 70),
+    Rect(500, 485, 50, 70),
+    Rect(645, 480, 205, 70),
+    Rect(810, 345, 340, 70), #bloco com 5
+    Rect(900, 140, 165, 50), #cogumelo
+    Rect(1110, 100, 200, 20), #nuvem
+    Rect(1210, 230, 200, 70), #bloco triplo
+    Rect(1405, 380, 340, 70), #bloco com 5
+    Rect(1525, 265, 200, 70), #bloco triplo
+    Rect(1540, 70, 165, 50), #cogumelo
+    Rect(1735, 60, 200, 20), #nuvem
+    Rect(1940, 125, 70, 30), #bloco simples
+    Rect(2060, 220, 70, 30), #bloco simples
+    Rect(1975, 275, 70, 30), #bloco simples
+    Rect(1810, 345, 200, 70), #bloco triplo
+    Rect(2255, 280, 190, 20),
+    Rect(2542, 100, 200, 20), #nuvem
+    Rect(2328, 50, 190, 20),
+    Rect(2365, 420, 200, 70), #bloco triplo
+    Rect(2245, 487, 555, 70),
+    Rect(2478, 365, 320, 70)
+]
 
 
 #TODO: APAGAR POSIÇÃO DO MOUSE, VARIÁVEIS, FUNÇÃO E DESENHO
@@ -63,7 +68,8 @@ def on_mouse_move(pos):
 # Função para desenhar a tela
 def draw():
     screen.clear()
-
+    global alien_velocity_y
+    global alien_collided
     if GAME_STATE == "START":
         screen.fill((0, 0, 0))
         # Título
@@ -83,44 +89,54 @@ def draw():
 
 
     elif GAME_STATE == "PLAY":
-        screen.clear()
-        screen.fill((255,255,255))  # Cor de fundo branca
-        screen.fill((255,255,255))  # Cor de fundo branca
-        screen.blit("background", (bg_x, 0))
-        screen.blit("background", (bg_x + WIDTH, 0))
+        if stage == 1:
+            screen.clear()
+            screen.fill((255,255,255))  # Cor de fundo branca
+            screen.blit("background", (bg_x, 0))
+            screen.blit("background", (bg_x + WIDTH, 0))
 
-        alien.draw()
-        move_player()
+            alien.draw()
+            move_player()
+            for block in invisible_blocks:
+                screen.draw.rect(block, "red")
 
-        #TODO: APAGAR BLOCOS INVISÍVEIS
-        screen.draw.rect(invisible_block1, "red")
-        screen.draw.rect(invisible_block2, "red")
-        screen.draw.rect(invisible_block3, "red")
-        screen.draw.rect(invisible_block4, "red")
-        screen.draw.rect(invisible_block5, "red")
-        screen.draw.rect(invisible_block6, "red")
-        screen.draw.rect(invisible_block7, "red")
-        screen.draw.rect(invisible_block8, "red")
-        screen.draw.rect(invisible_block9, "red")
-        screen.draw.rect(invisible_block10, "red")
-        screen.draw.rect(invisible_block11, "red")
-        screen.draw.rect(invisible_block12, "red")
-        screen.draw.rect(invisible_block13, "red")
-        screen.draw.rect(invisible_block14, "red")
-        screen.draw.rect(invisible_block15, "red")
-        screen.draw.rect(invisible_block16, "red")
-        screen.draw.rect(invisible_block17, "red")
-        screen.draw.rect(invisible_block18, "red")
-        screen.draw.rect(invisible_block19, "red")
-        screen.draw.rect(invisible_block20, "red")
-        screen.draw.rect(invisible_block21, "red")
-        screen.draw.rect(invisible_block22, "red")
-        screen.draw.rect(invisible_block23, "red")
-        screen.draw.rect(invisible_block24, "red")
+            alien_collided = any(alien.colliderect(block) for block in invisible_blocks)
 
+            if alien_collided:
+                alien_velocity_y = 0
+        if stage == 2:
+            screen.clear()
+            screen.fill((255,255,255))  # Cor de fundo branca
+            screen.blit("background", (bg_x, 0))
+            screen.blit("background", (bg_x + WIDTH, 0))
+
+            alien.draw()
+            move_player()
+            for block in invisible_blocks:
+                screen.draw.rect(block, "red")
+
+            alien_collided = any(alien.colliderect(block) for block in invisible_blocks)
+
+            if alien_collided:
+                alien_velocity_y = 0
+        if stage == 3:
+            screen.clear()
+            screen.fill((255,255,255))  # Cor de fundo branca
+            screen.blit("background", (bg_x, 0))
+            screen.blit("background", (bg_x + WIDTH, 0))
+
+            alien.draw()
+            move_player()
+            for block in invisible_blocks:
+                screen.draw.rect(block, "red")
+
+            alien_collided = any(alien.colliderect(block) for block in invisible_blocks)
+
+            if alien_collided:
+                alien_velocity_y = 0
 
         #TODO: APAGAR TESTES DE POSIÇÃO
-        # screen.draw.text(f"BGX: {bg_x}, Y: {background.height}", (10, 10), color="black")
+        screen.draw.text(f"BGX: {bg_x}, Y: {background.height}", (10, 10), color="black")
         # screen.draw.text(f"AlienX: {ax}", (10, 30), color="black")
         screen.draw.text(f"Mouse: {mouse_x}, {mouse_y}", (mouse_x, mouse_y), fontsize=24, color="red")
         
@@ -137,6 +153,15 @@ def draw():
 
 def update():
     global bg_x
+
+    global alien_velocity_y
+    global alien_collided
+        #velocidade Y do alien
+    alien.y += alien_velocity_y
+    if not alien_collided:
+        alien_velocity_y += 0.5
+    print(alien_collided)
+    print(alien_velocity_y)
     # Quando a imagem sair completamente da tela, reposiciona
     if bg_x <= -WIDTH*4:
         bg_x = -WIDTH*4
@@ -167,25 +192,46 @@ def end_game():
     elif lives <= 0: #perdeu o jogo
         GAME_STATE = "END"
 
+#Função para verificar se ainda tem vidas
+def lives_over():
+    global lives
+    global GAME_STATE
+    lives -=1
+    if lives < 0:
+        alien.y = 0
+    else:
+        GAME_STATE = "END"
+
+#Função para mudar de stage
+def next_stage():
+    global stage
+    if GAME_STATE == "PLAY" and lives > 0 and stage <= 2:
+        stage +=1
+
 # Função para movimento do Jogador
 def move_player():
     global bg_x
-    if keyboard.left :
+    global alien_collided
+        #velocidade Y do alien
+    if keyboard.left and bg_x < 0 :
         # alien.x -= 2  # Move para a esquerda
         bg_x += 2
-        invisible_block1.x += 2 #TODO: APAGAR
+        for block in invisible_blocks:
+            block.x += 2
     if keyboard.right and bg_x > -WIDTH*4:
         # alien.x += 2  # Move para a direita
         bg_x -= 2
-        invisible_block1.x -= 2 #TODO: APAGAR
+        for block in invisible_blocks:
+            block.x -= 2
     if keyboard.right and bg_x == -WIDTH*4:
         alien.x += 2  # Move para a direita
         # bg_x -= 2
     if keyboard.up:
-        alien.y -= 5  # Move para cima
-    if keyboard.down:
-        alien.y += 5  # Move para baixo
-
+        alien.y -= 10  # Move para cima
+        alien_collided = False
+    # if keyboard.down:
+    #     alien.y += 5  # Move para baixo
+    
 # Função para verificar cliques do mouse
 def on_mouse_down(pos, button):
     global sounds_on
@@ -203,11 +249,12 @@ def on_mouse_down(pos, button):
     elif Rect((WIDTH / 2 - 100, 400), (200, 50)).collidepoint(pos):
         exit_game()
 
-
 # Função para iniciar o jogo
 def start_game():
     global GAME_STATE
+    global stage
     GAME_STATE = "PLAY"
+    stage = 1
     print("Jogo Iniciado!")   
 
 # Função para ligar ou desligar os sons
