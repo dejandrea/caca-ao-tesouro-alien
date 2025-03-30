@@ -11,7 +11,7 @@ GAME_STATE = "PLAY" #TODO:APAGAR
 sounds_on = True
 score = 0
 lives = 3
-stage = 1 #TODO: Mudar para 0
+stage = 3 #TODO: Mudar para 0
 
 #background
 background = Actor("bg1")
@@ -23,7 +23,7 @@ bg_x = 0;
 
 #Jogador
 alien = Actor('alien1')
-alien.pos = 100, 56
+alien.pos = 40, 56
 alien.images = ["alien1","alien2"]
 alien.frame = 0
 alien.width = 100
@@ -32,31 +32,43 @@ alien_velocity_y = 0
 alien_collided = False
 
 #blocos invisíveis
-invisible_blocks = [
-    Rect(35, 105, 200, 70),
-    Rect(0, 360, 310, 70),
-    Rect(310, 430, 195, 70),
-    Rect(480, 125, 205, 70),
-    Rect(500, 485, 50, 70),
-    Rect(645, 480, 205, 70),
-    Rect(810, 345, 340, 70), #bloco com 5
-    Rect(900, 140, 165, 50), #cogumelo
-    Rect(1110, 100, 200, 20), #nuvem
-    Rect(1210, 230, 200, 70), #bloco triplo
-    Rect(1405, 380, 340, 70), #bloco com 5
-    Rect(1525, 265, 200, 70), #bloco triplo
-    Rect(1540, 70, 165, 50), #cogumelo
-    Rect(1735, 60, 200, 20), #nuvem
-    Rect(1940, 125, 70, 30), #bloco simples
-    Rect(2060, 220, 70, 30), #bloco simples
-    Rect(1975, 275, 70, 30), #bloco simples
-    Rect(1810, 345, 200, 70), #bloco triplo
-    Rect(2255, 280, 190, 20),
-    Rect(2542, 100, 200, 20), #nuvem
-    Rect(2328, 50, 190, 20),
-    Rect(2365, 420, 200, 70), #bloco triplo
-    Rect(2245, 487, 555, 70),
-    Rect(2478, 365, 320, 70)
+invisible_blocks_stg1 = [
+    Rect(16, 105, 200, 70),
+    Rect(306, 86, 70, 20),
+    Rect(0, 360, 300, 70),
+    Rect(295, 430, 195, 70),
+    Rect(470, 125, 205, 70),
+    Rect(460, 485, 50, 70),
+    Rect(630, 480, 205, 70),
+    Rect(793, 345, 340, 70), #bloco com 5
+]
+
+invisible_blocks_stg2 = [
+    Rect(0, 345, 155, 20), #bloco com 5
+    Rect(0,133, 70, 50), #cogumelo
+    Rect(118, 93, 200, 20), #nuvem
+    Rect(223, 224, 200, 20), #bloco triplo
+    Rect(418, 376, 340, 20), #bloco com 5
+    Rect(537, 262, 200, 20), #bloco triplo
+    Rect(552, 59, 165, 50), #cogumelo
+    Rect(752, 53, 200, 20), #nuvem
+    Rect(825, 342, 100, 20),
+    Rect(405, 90, 70, 20),
+]
+
+invisible_blocks_stg3 = [
+    Rect(20, 125, 70, 30), #bloco simples
+    Rect(118, 260, 70, 30), #bloco simples
+    Rect(226, 330, 70, 30), #bloco simples
+    Rect(0, 345, 98, 70), #bloco triplo
+    Rect(335, 280, 190, 20),
+    Rect(677, 105, 200, 20), #nuvem
+    Rect(411, 50, 190, 20),
+    Rect(451, 420, 200, 70), #bloco triplo
+    Rect(362, 487, 555, 70),
+    Rect(565, 365, 335, 70),
+    Rect(563, 164, 70, 20),            
+
 ]
 
 
@@ -99,10 +111,10 @@ def draw():
 
             alien.draw()
             move_player()
-            for block in invisible_blocks:
+            for block in invisible_blocks_stg1:
                 screen.draw.rect(block, "red")
 
-            alien_collided = any(alien.colliderect(block) for block in invisible_blocks)
+            alien_collided = any(alien.colliderect(block) for block in invisible_blocks_stg1)
 
             if alien_collided:
                 alien_velocity_y = 0
@@ -120,16 +132,16 @@ def draw():
 
             alien.draw()
             move_player()
-            for block in invisible_blocks:
+            for block in invisible_blocks_stg2:
                 screen.draw.rect(block, "red")
 
-            alien_collided = any(alien.colliderect(block) for block in invisible_blocks)
+            alien_collided = any(alien.colliderect(block) for block in invisible_blocks_stg2)
 
             if alien_collided:
                 alien_velocity_y = 0
 
-            if alien.y >=600:
-                lives_over()
+            # if alien.y >=600:
+            #     lives_over()
             
             if alien.x >=880:
                 next_stage()
@@ -141,16 +153,16 @@ def draw():
 
             alien.draw()
             move_player()
-            for block in invisible_blocks:
+            for block in invisible_blocks_stg3:
                 screen.draw.rect(block, "red")
 
-            alien_collided = any(alien.colliderect(block) for block in invisible_blocks)
+            alien_collided = any(alien.colliderect(block) for block in invisible_blocks_stg3)
 
             if alien_collided:
                 alien_velocity_y = 0
             
-            if alien.y >=600:
-                lives_over()
+            # if alien.y >=600:
+            #     lives_over()
             
             if alien.x >=880:
                 next_stage()
@@ -240,12 +252,12 @@ def move_player():
     if keyboard.left :
         alien.x -= 2  # Move para a esquerda
         # bg_x += 2
-        # for block in invisible_blocks:
+        # for block in invisible_blocks_stg1:
         #     block.x += 2
     if keyboard.right:
         alien.x += 2  # Move para a direita
         # bg_x -= 2
-        # for block in invisible_blocks:
+        # for block in invisible_blocks_stg1:
         #     block.x -= 2
     # if keyboard.right and bg_x == -WIDTH*4:
     #     alien.x += 2  # Move para a direita
