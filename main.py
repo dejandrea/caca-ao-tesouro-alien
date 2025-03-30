@@ -4,19 +4,21 @@ import math
 import random
 
 # Inicialização de variáveis
-WIDTH = 700
+WIDTH = 900
 HEIGHT = 700
 GAME_STATE = "PLAY" #TODO:APAGAR
 # GAME_STATE = "START" 
 sounds_on = True
 score = 0
 lives = 3
-stage = 0
+stage = 1 #TODO: Mudar para 0
 
 #background
-background = Actor("background")
+background = Actor("bg1")
 background.x = WIDTH // 2
 background.y = HEIGHT // 2
+background.images = ["bg1","bg2","bg3"]
+background.frame = 0
 bg_x = 0;
 
 #Jogador
@@ -92,8 +94,8 @@ def draw():
         if stage == 1:
             screen.clear()
             screen.fill((255,255,255))  # Cor de fundo branca
-            screen.blit("background", (bg_x, 0))
-            screen.blit("background", (bg_x + WIDTH, 0))
+            screen.blit("bg1", (bg_x, 0))
+            screen.blit("bg1", (bg_x + WIDTH, 0))
 
             alien.draw()
             move_player()
@@ -104,11 +106,17 @@ def draw():
 
             if alien_collided:
                 alien_velocity_y = 0
+            
+            if alien.y >=600:
+                lives_over()
+            
+            if alien.x >=880:
+                next_stage()
         if stage == 2:
             screen.clear()
             screen.fill((255,255,255))  # Cor de fundo branca
-            screen.blit("background", (bg_x, 0))
-            screen.blit("background", (bg_x + WIDTH, 0))
+            screen.blit("bg2", (bg_x, 0))
+            screen.blit("bg2", (bg_x + WIDTH, 0))
 
             alien.draw()
             move_player()
@@ -119,11 +127,17 @@ def draw():
 
             if alien_collided:
                 alien_velocity_y = 0
+
+            if alien.y >=600:
+                lives_over()
+            
+            if alien.x >=880:
+                next_stage()
         if stage == 3:
             screen.clear()
             screen.fill((255,255,255))  # Cor de fundo branca
-            screen.blit("background", (bg_x, 0))
-            screen.blit("background", (bg_x + WIDTH, 0))
+            screen.blit("bg3", (bg_x, 0))
+            screen.blit("bg3", (bg_x + WIDTH, 0))
 
             alien.draw()
             move_player()
@@ -134,11 +148,20 @@ def draw():
 
             if alien_collided:
                 alien_velocity_y = 0
+            
+            if alien.y >=600:
+                lives_over()
+            
+            if alien.x >=880:
+                next_stage()
 
         #TODO: APAGAR TESTES DE POSIÇÃO
-        screen.draw.text(f"BGX: {bg_x}, Y: {background.height}", (10, 10), color="black")
+        # screen.draw.text(f"BGX: {bg_x}, Y: {background.height}", (10, 10), color="black")
         # screen.draw.text(f"AlienX: {ax}", (10, 30), color="black")
         screen.draw.text(f"Mouse: {mouse_x}, {mouse_y}", (mouse_x, mouse_y), fontsize=24, color="red")
+        screen.draw.text(f"Stage: {stage}", (10, 10), color="black")
+        screen.draw.text(f"Lives: {lives}", (10, 30), color="black")
+        screen.draw.text(f"Score: {score}", (10, 50), color="black")
         
 
     elif GAME_STATE == "WIN":
@@ -197,7 +220,7 @@ def lives_over():
     global lives
     global GAME_STATE
     lives -=1
-    if lives < 0:
+    if lives > 0:
         alien.y = 0
     else:
         GAME_STATE = "END"
@@ -207,25 +230,26 @@ def next_stage():
     global stage
     if GAME_STATE == "PLAY" and lives > 0 and stage <= 2:
         stage +=1
+        background.frame += 1
 
 # Função para movimento do Jogador
 def move_player():
     global bg_x
     global alien_collided
         #velocidade Y do alien
-    if keyboard.left and bg_x < 0 :
-        # alien.x -= 2  # Move para a esquerda
-        bg_x += 2
-        for block in invisible_blocks:
-            block.x += 2
-    if keyboard.right and bg_x > -WIDTH*4:
-        # alien.x += 2  # Move para a direita
-        bg_x -= 2
-        for block in invisible_blocks:
-            block.x -= 2
-    if keyboard.right and bg_x == -WIDTH*4:
+    if keyboard.left :
+        alien.x -= 2  # Move para a esquerda
+        # bg_x += 2
+        # for block in invisible_blocks:
+        #     block.x += 2
+    if keyboard.right:
         alien.x += 2  # Move para a direita
         # bg_x -= 2
+        # for block in invisible_blocks:
+        #     block.x -= 2
+    # if keyboard.right and bg_x == -WIDTH*4:
+    #     alien.x += 2  # Move para a direita
+    #     # bg_x -= 2
     if keyboard.up:
         alien.y -= 10  # Move para cima
         alien_collided = False
