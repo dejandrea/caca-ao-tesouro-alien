@@ -14,6 +14,18 @@ lives = 3
 stage = 1 #TODO: Mudar para 0
 coins = 0
 
+key = Actor("key",(330,80))
+trunk = Actor("trunk",(150,350))
+diamond = Actor("diamond",(390,410))
+
+# Variáveis de controle
+is_coins = False
+is_enimies = False
+temp_coins = 0
+get_key = False
+open_trunk = False
+get_diamond = False
+
 #background
 background = Actor("bg1")
 background.x = WIDTH // 2
@@ -77,6 +89,12 @@ plate_stg1 = Rect(830, 294, 60, 60)
 plate_stg2 = Rect(850, 290, 60, 60)
 plate_stg3 = Rect(850, 300, 60, 60)
 
+#posição das moedas
+coins_position_stg1 = [
+    [200,50],[250,30],[300,50],[420,40],[450,15],[480,40],[680,30],[650,40],[620,50],[710,20]
+]
+coins_list = []
+
 #TODO: APAGAR POSIÇÃO DO MOUSE, VARIÁVEIS, FUNÇÃO E DESENHO
 mouse_x, mouse_y = 0, 0
 
@@ -89,10 +107,10 @@ class Enemy:
         self.index_frame = 0
         self.enemy_type = enemy_type
         self.images = enemies_images[self.enemy_type]
-        # self.velocities = []
+        self.velocity_y = random.choice([-1.5, 1.5,-1,1,0.5,-0.5])
         self.direction = random.choice([-1.5, 1.5,-1,1,0.5,-0.5])
-        x = random.randint(100, 800)  # Posição X aleatória
-        y = random.randint(0, 200)  # Posição Y aleatória
+        x = random.randint(150, 800)  # Posição X aleatória
+        y = random.randint(10, 200)  # Posição Y aleatória
         self.actor = Actor(self.images[self.index_frame], (x, y))
     
     def animate(self):
@@ -106,15 +124,15 @@ class Enemy:
         if self.actor.x > WIDTH -50 or self.actor.x < 50:
             self.direction = self.direction*(-1)
 
-        self.actor.y += 0.3
-        if self.actor.y > 600:
-            self.actor.y = 50
+        self.actor.y += self.velocity_y
+        if self.actor.y > 600 or self.actor.y < 10:
+            self.velocity_y = self.velocity_y * (-1)
 
     def collide(self,collisor):
         enemy_collided = any(self.actor.colliderect(block) for block in collisor)
 
         if enemy_collided:
-            self.direction = self.direction*(-1)
+            pass
 
     def draw(self):
         self.actor.draw()
@@ -140,7 +158,7 @@ class Alien:
             self.actor.x -= 2  # Move para a esquerda
         if keyboard.right:
             self.actor.x += 2  # Move para a direita
-        if keyboard.up:
+        if keyboard.space:
             self.actor.y -= 10  # Move para cima
             self.actor_collided = False
 
@@ -160,44 +178,51 @@ class Alien:
     def draw(self):
         self.actor.draw()
 
-class Reward:
-    def __init__(self,reward_type):
-        self.index_frame = 0
-        self.reward_type = reward_type
-        self.images = enemies_images[self.reward_type]
-        # self.velocities = []
-        self.direction = random.choice([-1.5, 1.5,-1,1,0.5,-0.5])
-        x = random.randint(100, 800)  # Posição X aleatória
-        y = random.randint(0, 200)  # Posição Y aleatória
-        self.actor = Actor(self.images[self.index_frame], (x, y))
+class Coin:
+    def __init__(self,x,y):
+        self.frame = 0
+        self.images = ["coin1","coin2"]
+        self.actor = Actor("coin1", (x, y))
     
     def animate(self):
-        self.index_frame += 0.05
-        if self.index_frame >= len(self.images):
-            self.index_frame = 0  # Reinicia a animação
-        self.actor.image = self.images[int(self.index_frame)]
-
-    def move(self):
-        self.actor.x += self.direction
-        if self.actor.x > WIDTH -50 or self.actor.x < 50:
-            self.direction = self.direction*(-1)
-
-        self.actor.y += 0.3
-        if self.actor.y > 600:
-            self.actor.y = 50
+        self.frame += 0.05
+        if self.frame >= len(self.images):
+            self.frame = 0  # Reinicia a animação
+        self.actor.image = self.images[int(self.frame)]
 
     def collide(self,collisor):
-        reward_collided = any(self.actor.colliderect(block) for block in collisor)
+        pass
+        # reward_collided = any(self.actor.colliderect(block) for block in collisor)
 
-        if reward_collided:
-            self.direction = self.direction*(-1)
+        # if reward_collided:
+        #     self.direction = self.direction*(-1)
 
     def draw(self):
         self.actor.draw()
 
 alien = Alien()
 
+def coins_generate():
+    global coins_list
+    for pos in coins_position_stg1:
+        coins_list.append(Coin(pos[0],pos[1]))
+
+# Função para gerar os inimigos
+def generate_enemies():
+    global enemies
+    for i in range(0,3):  # Criando 5 inimigos
+        enemies.append(Enemy(i))
+
 def draw():
+    global is_coins
+    global is_enimies
+    global coins
+    global temp_coins
+    global coins_list
+    global get_key
+    global get_diamond
+    global open_trunk
+    global score
     screen.clear()
     if GAME_STATE == "START":
         screen.fill((0, 0, 0))
@@ -218,25 +243,52 @@ def draw():
 
 
     elif GAME_STATE == "PLAY":
+
         if stage == 1:
             screen.clear()
             screen.fill((255,255,255))  # Cor de fundo branca
             screen.blit("bg1", (bg_x, 0))
             screen.blit("bg1", (bg_x + WIDTH, 0))
             
-
             alien.draw()
             alien.move()
 
-            if len(enemies) <= 3:
+            if not is_coins:
+                coins_generate()
+                is_coins = True
+
+            if not is_enimies:
                 generate_enemies()
+                is_enimies = True
+
+            if not get_key:
+                key.draw()
+
+            if open_trunk and not get_diamond:
+                diamond.draw()
+
+            if not open_trunk:
+                trunk.draw()
+
+            if collision(alien.actor, key) and get_key == False:
+                get_key = True
+
+            if collision(alien.actor, trunk) and get_key == True and open_trunk == False:
+                open_trunk = True
+
+            if collision(alien.actor, diamond) and open_trunk == True and get_diamond == False :
+                get_diamond = True
+                score += 1
+
+            coins_list = [coin for coin in coins_list if not alien.actor.colliderect(coin.actor)]
+
+            coins = (10 - len(coins_list)) + temp_coins
+
+            for coin in coins_list:
+                coin.draw()
 
             for enemy in enemies:
                 enemy.draw()
-                    
-            # for block in invisible_blocks_stg1:
-            #     screen.draw.rect(block, "red")
-            # screen.draw.rect(plate_stg1, "red")
 
             for enemy in enemies:
                 enemy.collide(invisible_blocks_stg1)
@@ -245,7 +297,6 @@ def draw():
 
             for enemy in enemies:
                 if collision(alien.actor, enemy.actor):
-                    print("inimigo pegou")
                     lives_over()
             
             if alien.actor.y >= HEIGHT:
@@ -262,15 +313,47 @@ def draw():
             alien.draw()
             alien.move()
 
-            if len(enemies) <= 3:
+            key.x = 440
+            trunk.pos = (40,335)
+            diamond.pos = (450,350)
+
+            if not is_coins:
+                coins_generate()
+                is_coins = True
+
+            if not is_enimies:
                 generate_enemies()
+                is_enimies = True
+
+            if not get_key:
+                key.draw()
+
+            if open_trunk and not get_diamond:
+                diamond.draw()
+
+            if not open_trunk:
+                trunk.draw()
+
+            if collision(alien.actor, key) and get_key == False:
+                get_key = True
+
+            if collision(alien.actor, trunk) and get_key == True and open_trunk == False:
+                open_trunk = True
+
+            if collision(alien.actor, diamond) and open_trunk == True and get_diamond == False :
+                get_diamond = True
+                score += 1
+
+            coins_list = [coin for coin in coins_list if not alien.actor.colliderect(coin.actor)]
+
+            coins = (10 - len(coins_list)) + temp_coins
+
+            for coin in coins_list:
+                coin.draw()
 
             for enemy in enemies:
                 enemy.draw()
-                    
-            # for block in invisible_blocks_stg1:
-            #     screen.draw.rect(block, "red")
-            # screen.draw.rect(plate_stg2, "red")
+
             for enemy in enemies:
                 enemy.collide(invisible_blocks_stg2)
 
@@ -294,15 +377,47 @@ def draw():
             alien.draw()
             alien.move()
 
-            if len(enemies) <= 3:
+            key.pos = (150,245)
+            trunk.pos = (40,335)
+            diamond.pos = (560,360)
+
+            if not is_coins:
+                coins_generate()
+                is_coins = True
+
+            if not is_enimies:
                 generate_enemies()
+                is_enimies = True
+
+            if not get_key:
+                key.draw()
+
+            if open_trunk and not get_diamond:
+                diamond.draw()
+
+            if not open_trunk:
+                trunk.draw()
+
+            if collision(alien.actor, key) and get_key == False:
+                get_key = True
+
+            if collision(alien.actor, trunk) and get_key == True and open_trunk == False:
+                open_trunk = True
+
+            if collision(alien.actor, diamond) and open_trunk == True and get_diamond == False :
+                get_diamond = True
+                score += 1
+
+            coins_list = [coin for coin in coins_list if not alien.actor.colliderect(coin.actor)]
+
+            coins = (10 - len(coins_list)) + temp_coins
+
+            for coin in coins_list:
+                coin.draw()
 
             for enemy in enemies:
                 enemy.draw()
-                    
-            # for block in invisible_blocks_stg1:
-            #     screen.draw.rect(block, "red")
-            # screen.draw.rect(plate_stg3, "red")
+                
             for enemy in enemies:
                 enemy.collide(invisible_blocks_stg3)
 
@@ -316,7 +431,7 @@ def draw():
                 lives_over()
             
             if alien.actor.colliderect(plate_stg3) or alien.actor.x > WIDTH-30:
-                next_stage()
+                end_game()
 
         #TODO: APAGAR TESTES DE POSIÇÃO
         # screen.draw.text(f"BGX: {bg_x}, Y: {background.height}", (10, 10), color="black")
@@ -330,6 +445,7 @@ def draw():
 
     elif GAME_STATE == "WIN":
         screen.draw.text("CONGRATULATIONS!!!", center=(WIDTH // 2, HEIGHT//2), fontsize=100, color="red", align="center")
+        screen.draw.text("You Win!!!", center=(WIDTH // 2, (HEIGHT//2)+100), fontsize=100, color="red", align="center")
         
 
     elif GAME_STATE == "END":
@@ -339,24 +455,16 @@ def draw():
 
 def update():
     global bg_x
-    
-    # Quando a imagem sair completamente da tela, reposiciona
-    if bg_x <= -WIDTH*4:
-        bg_x = -WIDTH*4
-    if bg_x >= 0:
-        bg_x = 0
 
     alien.velocity()
     alien.animate()
 
-    if alien.actor.x >= (WIDTH)-20:
-        alien.actor.x = (WIDTH)-20
-        end_game()
+    for coin in coins_list:
+        coin.animate()
 
     for enemy in enemies:
         enemy.animate()
         enemy.move()
-        # enemy.change_direction()
 
 # Função de Fim de Jogo
 def end_game():
@@ -385,24 +493,29 @@ def lives_over():
 #Função para mudar de stage
 def next_stage():
     global stage
+    global is_enimies
+    global is_coins
+    global enemies
+    global coins_list
+    global coins
+    global temp_coins
+    global get_diamond
+    global get_key
+    global open_trunk
     
     if GAME_STATE == "PLAY" and lives > 0 and stage <= 2:
         stage += 1
         background.frame += 1
         alien.actor.x = 30
         alien.actor.y = 0
-
-        for enemy in enemies:
-            enemies.remove(enemy)
-
-# Função para gerar os inimigos
-def generate_enemies():
-    global enemies
-    for i in range(0,3):  # Criando 5 inimigos
-        enemies.append(Enemy(i))
-
-def rewards_generate():
-    pass 
+        is_coins = False
+        is_enimies = False
+        temp_coins += coins
+        get_key = False
+        get_diamond = False
+        open_trunk = False
+        coins_list = []
+        enemies = []
 
 def collision(actor1, actor2):
     return (abs(actor1.x - actor2.x) < 30 and abs(actor1.y - actor2.y) < 30) 
