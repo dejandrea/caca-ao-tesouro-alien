@@ -6,8 +6,8 @@ import random
 # Inicialização de variáveis
 WIDTH = 900
 HEIGHT = 700
-GAME_STATE = "PLAY" #TODO:APAGAR
-# GAME_STATE = "START" 
+# GAME_STATE = "PLAY" #TODO:APAGAR
+GAME_STATE = "START" 
 sounds_on = True
 score = 0
 lives = 3
@@ -17,6 +17,7 @@ coins = 0
 key = Actor("key",(330,80))
 trunk = Actor("trunk",(150,350))
 diamond = Actor("diamond",(390,410))
+game_name = Actor("aliengame",(WIDTH//2,100))
 
 # Variáveis de controle
 is_coins = False
@@ -213,6 +214,8 @@ def generate_enemies():
     for i in range(0,3):  # Criando 5 inimigos
         enemies.append(Enemy(i))
 
+sounds.musicgame.play(loops=True)
+
 def draw():
     global is_coins
     global is_enimies
@@ -224,23 +227,24 @@ def draw():
     global open_trunk
     global score
     screen.clear()
+
     if GAME_STATE == "START":
         screen.fill((0, 0, 0))
+        game_name.draw()
         # Título
-        screen.draw.text("Menu Principal", center=(WIDTH // 2, 100), fontsize=50, color="white", align="center")
+        screen.draw.text("Menu Principal", center=(WIDTH // 2, 200), fontsize=50, color="white", align="center")
 
         # Botão Começar Jogo
-        screen.draw.rect(Rect((WIDTH / 2 - 100, 200), (200, 50)), color="blue")
-        screen.draw.text("Começar Jogo", center=(WIDTH / 2, 225), fontsize=30, color="white")
+        screen.draw.rect(Rect((WIDTH / 2 - 100, 300), (200, 50)), color="blue")
+        screen.draw.text("Começar Jogo", center=(WIDTH / 2, 325), fontsize=30, color="white")
 
         # Botão Ligar/Desligar Sons
-        screen.draw.rect(Rect((WIDTH / 2 - 100, 300), (200, 50)), color="green")
-        screen.draw.text("Sons: On" if sounds_on else "Sons: Off", center=(WIDTH / 2, 325), fontsize=30, color="white")
+        screen.draw.rect(Rect((WIDTH / 2 - 100, 400), (200, 50)), color="green")
+        screen.draw.text("Sons: On" if sounds_on else "Sons: Off", center=(WIDTH / 2, 425), fontsize=30, color="white")
 
         # Botão Sair
-        screen.draw.rect(Rect((WIDTH / 2 - 100, 400), (200, 50)), color="red")
-        screen.draw.text("Sair", center=(WIDTH / 2, 425), fontsize=30, color="white")
-
+        screen.draw.rect(Rect((WIDTH / 2 - 100, 500), (200, 50)), color="red")
+        screen.draw.text("Sair", center=(WIDTH / 2, 525), fontsize=30, color="white")
 
     elif GAME_STATE == "PLAY":
 
@@ -277,10 +281,12 @@ def draw():
                 open_trunk = True
 
             if collision(alien.actor, diamond) and open_trunk == True and get_diamond == False :
+                sounds.winnerbell.play()
                 get_diamond = True
                 score += 1
 
-            coins_list = [coin for coin in coins_list if not alien.actor.colliderect(coin.actor)]
+            coins_list = [coin for coin in coins_list if not alien.actor.colliderect(coin.actor) or (sounds.collectpoints.play())]
+            # coins_list = [coin for coin in coins_list if not alien.actor.colliderect(coin.actor)]
 
             coins = (10 - len(coins_list)) + temp_coins
 
@@ -303,6 +309,7 @@ def draw():
                 lives_over()
             
             if alien.actor.colliderect(plate_stg1) or alien.actor.x > WIDTH-30:
+                sounds.powerup.play()
                 next_stage()
         if stage == 2:
             screen.clear()
@@ -341,10 +348,11 @@ def draw():
                 open_trunk = True
 
             if collision(alien.actor, diamond) and open_trunk == True and get_diamond == False :
+                sounds.winnerbell.play()
                 get_diamond = True
                 score += 1
 
-            coins_list = [coin for coin in coins_list if not alien.actor.colliderect(coin.actor)]
+            coins_list = [coin for coin in coins_list if not alien.actor.colliderect(coin.actor) or (sounds.collectpoints.play())]
 
             coins = (10 - len(coins_list)) + temp_coins
 
@@ -367,6 +375,7 @@ def draw():
                 lives_over()
             
             if alien.actor.colliderect(plate_stg2) or alien.actor.x > WIDTH-30:
+                sounds.powerup.play()
                 next_stage()
         if stage == 3:
             screen.clear()
@@ -405,10 +414,11 @@ def draw():
                 open_trunk = True
 
             if collision(alien.actor, diamond) and open_trunk == True and get_diamond == False :
+                sounds.winnerbell.play()
                 get_diamond = True
                 score += 1
 
-            coins_list = [coin for coin in coins_list if not alien.actor.colliderect(coin.actor)]
+            coins_list = [coin for coin in coins_list if not alien.actor.colliderect(coin.actor) or (sounds.collectpoints.play())]
 
             coins = (10 - len(coins_list)) + temp_coins
 
@@ -431,11 +441,9 @@ def draw():
                 lives_over()
             
             if alien.actor.colliderect(plate_stg3) or alien.actor.x > WIDTH-30:
+                sounds.powerup.play()
                 end_game()
 
-        #TODO: APAGAR TESTES DE POSIÇÃO
-        # screen.draw.text(f"BGX: {bg_x}, Y: {background.height}", (10, 10), color="black")
-        # screen.draw.text(f"AlienX: {ax}", (10, 30), color="black")
         screen.draw.text(f"Mouse: {mouse_x}, {mouse_y}", (mouse_x, mouse_y), fontsize=24, color="red")
         screen.draw.text(f"Stage: {stage}", (10, 10), color="black")
         screen.draw.text(f"Lives: {lives}", (10, 30), color="black")
@@ -488,7 +496,9 @@ def lives_over():
         alien.actor.y = 0
         alien.actor.x = 30
     else:
+        sounds.deathsound.play()
         GAME_STATE = "END"
+
 
 #Função para mudar de stage
 def next_stage():
@@ -525,16 +535,16 @@ def on_mouse_down(pos, button):
     global sounds_on
 
     # Verifica se o botão "Começar Jogo" foi clicado
-    if Rect((WIDTH / 2 - 100, 200), (200, 50)).collidepoint(pos):
+    if Rect((WIDTH / 2 - 100, 300), (200, 50)).collidepoint(pos):
         start_game()
     
     # Verifica se o botão "Ligar/Desligar Sons" foi clicado
-    elif Rect((WIDTH / 2 - 100, 300), (200, 50)).collidepoint(pos):
+    elif Rect((WIDTH / 2 - 100, 400), (200, 50)).collidepoint(pos):
         sounds_on = not sounds_on  # Alterna o estado dos sons
         toggle_sounds()
 
     # Verifica se o botão "Sair" foi clicado
-    elif Rect((WIDTH / 2 - 100, 400), (200, 50)).collidepoint(pos):
+    elif Rect((WIDTH / 2 - 100, 500), (200, 50)).collidepoint(pos):
         exit_game()
 
 # Função para iniciar o jogo
@@ -549,9 +559,9 @@ def start_game():
 def toggle_sounds():
     #TODO: TROCAR O SOM DE FUNDO E ACRESCENTAR SONS DO JOGO
     if sounds_on:
-        sounds.air.play(loops=True)  # Retoma a música de fundo
+        sounds.musicgame.play(loops=True)  # Retoma a música de fundo
     else:
-        sounds.air.stop()  # Pausa a música de fundo
+        sounds.musicgame.stop()  # Pausa a música de fundo
     
 # Função para sair do jogo
 def exit_game():
