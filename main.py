@@ -6,12 +6,11 @@ import random
 # Inicialização de variáveis
 WIDTH = 900
 HEIGHT = 700
-# GAME_STATE = "PLAY" #TODO:APAGAR
 GAME_STATE = "START" 
 sounds_on = True
 score = 0
 lives = 3
-stage = 1 #TODO: Mudar para 0
+stage = 0
 coins = 0
 
 key = Actor("key",(330,80))
@@ -34,9 +33,6 @@ background.y = HEIGHT // 2
 background.images = ["bg1","bg2","bg3"]
 background.frame = 0
 bg_x = 0;
-
-#Jogador
-
 
 #Inimigos
 enemies = []
@@ -95,13 +91,6 @@ coins_position_stg1 = [
     [200,50],[250,30],[300,50],[420,40],[450,15],[480,40],[680,30],[650,40],[620,50],[710,20]
 ]
 coins_list = []
-
-#TODO: APAGAR POSIÇÃO DO MOUSE, VARIÁVEIS, FUNÇÃO E DESENHO
-mouse_x, mouse_y = 0, 0
-
-def on_mouse_move(pos):
-    global mouse_x, mouse_y
-    mouse_x, mouse_y = pos  # Atualiza as coordenadas do mouse
 
 class Enemy:
     def __init__(self,enemy_type):
@@ -286,7 +275,6 @@ def draw():
                 score += 1
 
             coins_list = [coin for coin in coins_list if not alien.actor.colliderect(coin.actor) or (sounds.collectpoints.play())]
-            # coins_list = [coin for coin in coins_list if not alien.actor.colliderect(coin.actor)]
 
             coins = (10 - len(coins_list)) + temp_coins
 
@@ -444,7 +432,6 @@ def draw():
                 sounds.powerup.play()
                 end_game()
 
-        screen.draw.text(f"Mouse: {mouse_x}, {mouse_y}", (mouse_x, mouse_y), fontsize=24, color="red")
         screen.draw.text(f"Stage: {stage}", (10, 10), color="black")
         screen.draw.text(f"Lives: {lives}", (10, 30), color="black")
         screen.draw.text(f"Score: {score}", (10, 50), color="black")
@@ -458,7 +445,7 @@ def draw():
 
     elif GAME_STATE == "END":
         screen.clear()
-        screen.fill((0, 0, 0))  # Cor de fundo preta
+        screen.fill((0, 0, 0))
         screen.draw.text("GAME OVER", center=(WIDTH // 2, HEIGHT//2), fontsize=100, color="red", align="center")
 
 def update():
@@ -557,7 +544,6 @@ def start_game():
 
 # Função para ligar ou desligar os sons
 def toggle_sounds():
-    #TODO: TROCAR O SOM DE FUNDO E ACRESCENTAR SONS DO JOGO
     if sounds_on:
         sounds.musicgame.play(loops=True)  # Retoma a música de fundo
     else:
