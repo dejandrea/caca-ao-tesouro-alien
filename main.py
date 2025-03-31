@@ -12,6 +12,7 @@ sounds_on = True
 score = 0
 lives = 3
 stage = 1 #TODO: Mudar para 0
+coins = 0
 
 #background
 background = Actor("bg1")
@@ -71,6 +72,10 @@ invisible_blocks_stg3 = [
 
 ]
 
+#placas para mudar de fase
+plate_stg1 = Rect(830, 294, 60, 60)
+plate_stg2 = Rect(850, 290, 60, 60)
+plate_stg3 = Rect(850, 300, 60, 60)
 
 #TODO: APAGAR POSIÇÃO DO MOUSE, VARIÁVEIS, FUNÇÃO E DESENHO
 mouse_x, mouse_y = 0, 0
@@ -87,7 +92,7 @@ class Enemy:
         # self.velocities = []
         self.direction = random.choice([-1.5, 1.5,-1,1,0.5,-0.5])
         x = random.randint(100, 800)  # Posição X aleatória
-        y = random.randint(50, 400)  # Posição Y aleatória
+        y = random.randint(0, 200)  # Posição Y aleatória
         self.actor = Actor(self.images[self.index_frame], (x, y))
     
     def animate(self):
@@ -155,6 +160,41 @@ class Alien:
     def draw(self):
         self.actor.draw()
 
+class Reward:
+    def __init__(self,reward_type):
+        self.index_frame = 0
+        self.reward_type = reward_type
+        self.images = enemies_images[self.reward_type]
+        # self.velocities = []
+        self.direction = random.choice([-1.5, 1.5,-1,1,0.5,-0.5])
+        x = random.randint(100, 800)  # Posição X aleatória
+        y = random.randint(0, 200)  # Posição Y aleatória
+        self.actor = Actor(self.images[self.index_frame], (x, y))
+    
+    def animate(self):
+        self.index_frame += 0.05
+        if self.index_frame >= len(self.images):
+            self.index_frame = 0  # Reinicia a animação
+        self.actor.image = self.images[int(self.index_frame)]
+
+    def move(self):
+        self.actor.x += self.direction
+        if self.actor.x > WIDTH -50 or self.actor.x < 50:
+            self.direction = self.direction*(-1)
+
+        self.actor.y += 0.3
+        if self.actor.y > 600:
+            self.actor.y = 50
+
+    def collide(self,collisor):
+        reward_collided = any(self.actor.colliderect(block) for block in collisor)
+
+        if reward_collided:
+            self.direction = self.direction*(-1)
+
+    def draw(self):
+        self.actor.draw()
+
 alien = Alien()
 
 def draw():
@@ -183,6 +223,7 @@ def draw():
             screen.fill((255,255,255))  # Cor de fundo branca
             screen.blit("bg1", (bg_x, 0))
             screen.blit("bg1", (bg_x + WIDTH, 0))
+            
 
             alien.draw()
             alien.move()
@@ -195,6 +236,8 @@ def draw():
                     
             # for block in invisible_blocks_stg1:
             #     screen.draw.rect(block, "red")
+            # screen.draw.rect(plate_stg1, "red")
+
             for enemy in enemies:
                 enemy.collide(invisible_blocks_stg1)
 
@@ -202,12 +245,13 @@ def draw():
 
             for enemy in enemies:
                 if collision(alien.actor, enemy.actor):
+                    print("inimigo pegou")
                     lives_over()
             
-            if alien.actor.y >=600:
+            if alien.actor.y >= HEIGHT:
                 lives_over()
             
-            if alien.actor.x >=880:
+            if alien.actor.colliderect(plate_stg1) or alien.actor.x > WIDTH-30:
                 next_stage()
         if stage == 2:
             screen.clear()
@@ -226,19 +270,20 @@ def draw():
                     
             # for block in invisible_blocks_stg1:
             #     screen.draw.rect(block, "red")
+            # screen.draw.rect(plate_stg2, "red")
             for enemy in enemies:
-                enemy.collide(invisible_blocks_stg1)
+                enemy.collide(invisible_blocks_stg2)
 
-            alien.collide(invisible_blocks_stg1)
+            alien.collide(invisible_blocks_stg2)
 
             for enemy in enemies:
                 if collision(alien.actor, enemy.actor):
                     lives_over()
             
-            if alien.actor.y >=600:
+            if alien.actor.y >= HEIGHT:
                 lives_over()
             
-            if alien.actor.x >=880:
+            if alien.actor.colliderect(plate_stg2) or alien.actor.x > WIDTH-30:
                 next_stage()
         if stage == 3:
             screen.clear()
@@ -257,19 +302,20 @@ def draw():
                     
             # for block in invisible_blocks_stg1:
             #     screen.draw.rect(block, "red")
+            # screen.draw.rect(plate_stg3, "red")
             for enemy in enemies:
-                enemy.collide(invisible_blocks_stg1)
+                enemy.collide(invisible_blocks_stg3)
 
-            alien.collide(invisible_blocks_stg1)
+            alien.collide(invisible_blocks_stg3)
 
             for enemy in enemies:
                 if collision(alien.actor, enemy.actor):
                     lives_over()
             
-            if alien.actor.y >=600:
+            if alien.actor.y >= HEIGHT:
                 lives_over()
             
-            if alien.actor.x >=880:
+            if alien.actor.colliderect(plate_stg3) or alien.actor.x > WIDTH-30:
                 next_stage()
 
         #TODO: APAGAR TESTES DE POSIÇÃO
@@ -279,6 +325,7 @@ def draw():
         screen.draw.text(f"Stage: {stage}", (10, 10), color="black")
         screen.draw.text(f"Lives: {lives}", (10, 30), color="black")
         screen.draw.text(f"Score: {score}", (10, 50), color="black")
+        screen.draw.text(f"Coins: {coins}", (10, 70), color="black")
         
 
     elif GAME_STATE == "WIN":
@@ -289,7 +336,6 @@ def draw():
         screen.clear()
         screen.fill((0, 0, 0))  # Cor de fundo preta
         screen.draw.text("GAME OVER", center=(WIDTH // 2, HEIGHT//2), fontsize=100, color="red", align="center")
-
 
 def update():
     global bg_x
@@ -316,12 +362,14 @@ def update():
 def end_game():
     global GAME_STATE
     
-    if alien.actor.x >= WIDTH-20 and score >= 3: #ganhou o jogo
+    if alien.actor.x >= WIDTH-20 and score >= 3 and stage == 3: #ganhou o jogo
         GAME_STATE = "WIN"
-    elif alien.actor.x >= WIDTH-20 and score < 3: #chegou ao fim, mas não completou a missão
+    if alien.actor.x >= WIDTH-20 and stage == 3 and score < 3: #chegou ao fim, mas não completou a missão
         GAME_STATE = "END"
-    elif lives <= 0: #perdeu o jogo
+        print("Não completou")
+    if lives <= 0: #perdeu o jogo
         GAME_STATE = "END"
+        print("Perdeu tudo")
 
 #Função para verificar se ainda tem vidas
 def lives_over():
@@ -337,16 +385,25 @@ def lives_over():
 #Função para mudar de stage
 def next_stage():
     global stage
+    
     if GAME_STATE == "PLAY" and lives > 0 and stage <= 2:
-        stage +=1
+        stage += 1
         background.frame += 1
+        alien.actor.x = 30
+        alien.actor.y = 0
+
+        for enemy in enemies:
+            enemies.remove(enemy)
 
 # Função para gerar os inimigos
 def generate_enemies():
     global enemies
     for i in range(0,3):  # Criando 5 inimigos
         enemies.append(Enemy(i))
-    
+
+def rewards_generate():
+    pass 
+
 def collision(actor1, actor2):
     return (abs(actor1.x - actor2.x) < 30 and abs(actor1.y - actor2.y) < 30) 
 
